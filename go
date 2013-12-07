@@ -16,17 +16,74 @@
 KITCHENPLAN_PATH = ENV.fetch("KITCHENPLAN_PATH", "/opt/kitchenplan")
 KITCHENPLAN_REPO = ENV.fetch("KITCHENPLAN_REPO", "https://github.com/kitchenplan/kitchenplan.git")
 
-# execute a shell command and raise an error if non-zero exit code is returned
-def run_cmd(cmd, options = {})
-  puts "$ #{cmd}"
-  success = system(cmd)
-  fail "#{cmd} failed" unless success || options[:allow_failure]
+require 'optparse'
+options = {}
+OptionParser.new do |opts|
+    opts.banner = 'Usage: go [options]'
+
+    options[:interaction] = true
+    opts.on("--[no-]interaction", "Run the go script without user interaction") do |interaction|
+	options[:interaction] = interaction
+    end
+
+    opts.separator ""
+    opts.separator "Common options:"
+
+    opts.on_tail("-h", "--help", "Show this message") do
+	puts opts
+	exit
+    end
+
+    opts.on_tail("--version", "Show version") do
+	puts "1.0.0"
+	exit
+    end
+
+end.parse!
+
+module Tty extend self
+  def blue; bold 34; end
+  def white; bold 39; end
+  def red; underline 31; end
+  def reset; escape 0; end
+  def bold n; escape "1;#{n}" end
+  def underline n; escape "4;#{n}" end
+  def escape n; "\033[#{n}m" if STDOUT.tty? end
 end
 
-# check if xcode command line tools are installed
-def xcode_cli_installed?
-  xcode_path = `xcode-select -p`
-  xcode_cli_installed = $?.to_i == 0
+class Array
+  def shell_s
+    cp = dup
+    first = cp.shift
+    cp.map{ |arg| arg.gsub " ", "\\ " }.unshift(first) * " "
+  end
+end
+
+def ohai *args
+  puts "#{Tty.blue}==>#{Tty.white} #{args.shell_s}#{Tty.reset}"
+end
+
+def warn warning
+  puts "#{Tty.red}Warning#{Tty.reset}: #{warning.chomp}"
+end
+
+def system *args
+  abort "Failed during: #{args.shell_s}" unless Kernel.system *args
+end
+
+def warnandexit message
+  warn message
+  exit
+end
+
+def sudo *args
+  args = if args.length > 1
+    args.unshift "/usr/bin/sudo"
+  else
+    "/usr/bin/sudo #{args.first}"
+  end
+  ohai *args
+  system *args
 end
 
 def normaldo *args
@@ -97,9 +154,9 @@ if macos_version > "10.8"
 end
 
 if File.directory?(KITCHENPLAN_PATH)
-  puts "Updating existing kitchenplan installation..."
+  ohai "Updating existing kitchenplan installation..."
   Dir.chdir KITCHENPLAN_PATH
-  run_cmd "git pull"
+  normaldo "git pull"
 else
   ohai "Setting up the Kitchenplan installation..."
   sudo "mkdir -p #{KITCHENPLAN_PATH}"

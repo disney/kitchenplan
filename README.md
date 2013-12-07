@@ -6,7 +6,7 @@ Read about this project and it's values and goals in this blog post: [http://van
 
 ## Using Kitchenplan
 
-### As a Kitchenplan maintainer for your organisation or for personal use.
+I myself will use this version, so you can learn from my config files. But you best start of by forking this repo. You will need it to store your configuration files. See the Custom Repository section for more info.
 
 I myself will use this version, so you can learn from my config files. But you best start of by forking this repo. You will need it to store your configuration files. [If you want to make it private, read up on how Boxen suggest you do this](https://github.com/boxen/our-boxen#bootstrapping)
 
@@ -25,7 +25,7 @@ ruby -e "$(curl -fsSL https://raw.github.com/kitchenplan/kitchenplan/version2/go
 Now, to get Kitchenplan on your computer, run the following commands:
 
 ```bash
-$ ruby -e "$(curl -fsSL https://raw.github.com/kitchenplan/kitchenplan/master/go)"
+ruby -e "$(curl -fsSL https://raw.github.com/kitchenplan/kitchenplan/master/go)"
 ```
 
 ### Custom Repository
@@ -41,9 +41,9 @@ $ ruby -e "$(curl -fsSL https://raw.github.com/kitchenplan/kitchenplan/version2/
 
 ### Custom Recipes
 
-Before you run the ```./kitchenplan``` command, first create a custom config file. The config system will always start of with ```default.yml```. This will contain the recipes for every person in your organisation. Next it it will look at the file ```yourusername.yml``` (with the username logged in on the computer as yourusername) for your custom settings. Ofcourse there will be a lot of shared config when your organisation has departments of different types of personel. So you can define group config files and assign one or more groups to a user. The ```roderik.yml``` ([found here](https://github.com/kitchenplan/kitchenplan/blob/master/config/people/roderik.yml)) is my personal config file and it will fall back to this config if you don't have a personal file.
+Before you run the commadn above, or manually run the```./kitchenplan``` command, you should first create a custom config file. The config system will always start off with ```default.yml```. This will contain the recipes for every person in your organisation. Next it it will look at the file ```yourusername.yml``` (with the username logged in on the computer as yourusername) for your custom settings. Ofcourse there will be a lot of shared config when your organisation has departments of different types of personel. So you can define group config files and assign one or more groups to a user. The ```roderik.yml``` ([found here](https://github.com/kitchenplan/kitchenplan/blob/master/config/people/roderik.yml)) is my personal config file and it will fall back to this config if you don't have a personal file.
 
-When you are done with that, run ```kitchenplan``` and wait for a while. After the command finishes, reboot your computer and you are good to go.
+When you are done with that, run the go script or run ```kitchenplan``` manually and wait for a while. After the command finishes, reboot your computer and you are good to go.
 
 ### Command line tools
 
@@ -53,8 +53,7 @@ There are some useful command line options, run ```kitchenplan -d``` or look her
 Usage: kitchenplan [options]
     -d, --debug                      Show debug information
     -c, --update-cookbooks           Update the Chef cookbooks
-        --[no-]soloist               Run soloist (defaults to yes)
-        --[no-]update                Run the kitchenplan update (defaults to yes)
+	--[no-]chef                  Run chef (defaults to yes)
 
 Common options:
     -h, --help                       Show this message
