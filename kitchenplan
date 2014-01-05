@@ -29,54 +29,25 @@ EOABORT
 
 # Put us where we belong, in the root dir of our kitchenplan repo.
 
-def normaldo *args
-  ohai *args
-  system *args
-end
+options = parse_commandline()
 
-def macos_version
-  @macos_version ||= `/usr/bin/sw_vers -productVersion`.chomp[/10\.\d+/]
-end
-
+platform = eval("Kitchenplan::Platform::#{Kitchenplan::Platform.constants.first.to_s}.new(debug=#{options[:debug].inspect})")
+ohai "Checking platform #{platform.name} version #{platform.version} prerequisites..."
+platform.prerequisites()
 
 ########################################
-
-abort "OSX too old, you need at least Mountain Lion" if macos_version < "10.8"
-abort "Don't run this as root!" if Process.uid == 0
-abort <<-EOABORT unless `groups`.split.include? "admin"
-This script requires the user #{ENV['USER']} to be an Administrator.
-EOABORT
 
 # Put us where we belong, in the root dir of our kitchenplan repo.
 require 'pathname'
 Dir.chdir Pathname.new(__FILE__).realpath + ".."
+# load config early as it tells us what platform we're on.
+$: << File.join((File.expand_path("../", Pathname.new(__FILE__).realpath)), "/lib")
+require "kitchenplan/config"
+config = Kitchenplan::Config.new
 
-# Flags
-require 'optparse'
-options = {}
-OptionParser.new do |opts|
-    opts.banner = 'Usage: kitchenplan [options]'
-    opts.on("-d", "--debug", "Show debug information") do |debug|
-        options[:debug] = debug
-    end
-    opts.on("-c", "--update-cookbooks", "Update the Chef cookbooks") do |update_cookbooks|
-        options[:update_cookbooks] = update_cookbooks
-    end
-    options[:chef] = true
-    opts.on("--[no-]chef", "Run chef (defaults to yes)") do |chef|
-	options[:chef] = chef
-    end
-    opts.separator ""
-    opts.separator "Common options:"
-    opts.on_tail("-h", "--help", "Show this message") do
-        puts opts
-        exit
-    end
-    opts.on_tail("--version", "Show version") do
-        puts "1.0.1"
-        exit
-    end
-end.parse!
+abort <<-EOABORT unless `groups`.split.include? "admin"
+This script requires the user #{ENV['USER']} to be an Administrator.
+EOABORT
 
 # Bootstrapping dependencies
 sudo "sudo gem install bundler --no-rdoc --no-ri" unless Kernel.system "gem query --name-matches '^bundler$' --installed > /dev/null 2>&1"
@@ -91,7 +62,7 @@ require 'json'
 # Trying to get some metrics for usage, just comment out if you don't want it.
 ohai 'Sending a ping to Google Analytics to count usage'
 require 'Gabba'
-Gabba::Gabba.new("UA-46288146-1", "github.com").event("Kitchenplan", "Run", ENV['USER'])
+#Gabba::Gabba.new("UA-46288146-1", "github.com").event("Kitchenplan", "Run", ENV['USER'])
 #Gabba::Gabba.new("UA-46288146-1", "github.com").event("Kitchenplan", "Run", "User", ENV['USER'])
 
 # Trying to get some metrics for usage, just comment out if you don't want it.
