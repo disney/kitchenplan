@@ -11,27 +11,30 @@ module Kitchenplan
     attr_reader :people_config
     attr_reader :group_configs
 
-    def initialize
-        self.detect_platform
-        self.parse_default_config
-        self.parse_people_config
-        self.parse_group_configs
+    def initialize(parse_configs=true)
+      self.detect_platform
+      if parse_configs
+	self.parse_default_config
+	self.parse_people_config
+	self.parse_group_configs
+      end
     end
 
     def detect_platform
-	ohai = Ohai::System.new
-	ohai.all_plugins
-	@platform = ohai[:platform_family]
+      ohai = Ohai::System.new
+      ohai.require_plugin("os")
+      ohai.require_plugin("platform")
+      @platform = ohai[:platform_family]
     end
 
     def parse_default_config
-        default_config_path = 'config/default.yml'
-        @default_config = ( YAML.load_file(default_config_path) if File.exist?(default_config_path) ) || {}
+      default_config_path = 'config/default.yml'
+      @default_config = ( YAML.load_file(default_config_path) if File.exist?(default_config_path) ) || {}
     end
 
     def parse_people_config
-        people_config_path = "config/people/#{Etc.getlogin}.yml"
-	@people_config = ( YAML.load_file(people_config_path) if File.exist?(people_config_path) ) || YAML.load_file("config/people/roderik.yml")
+      people_config_path = "config/people/#{Etc.getlogin}.yml"
+      @people_config = ( YAML.load_file(people_config_path) if File.exist?(people_config_path) ) || YAML.load_file("config/people/roderik.yml")
     end
 
     def parse_group_configs(group = (( @default_config['groups'] || [] ) | ( @people_config['groups'] || [] )))
