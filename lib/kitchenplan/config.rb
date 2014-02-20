@@ -2,8 +2,9 @@ require 'yaml'
 require 'etc'
 require 'ohai'
 
-module Kitchenplan
-
+class Kitchenplan
+  # standalone class that parses YAML configs in root/configs ...
+  # TODO: some of this could stand to be refactored.
   class Config
 
     attr_reader :platform
@@ -19,7 +20,7 @@ module Kitchenplan
 	self.parse_group_configs
       end
     end
-
+    # ohai-based platform detection.
     def detect_platform
       ohai = Ohai::System.new
       ohai.require_plugin("os")
@@ -27,11 +28,14 @@ module Kitchenplan
       @platform = ohai[:platform_family]
     end
 
+    # parse the default global config file.
     def parse_default_config
       default_config_path = 'config/default.yml'
       @default_config = ( YAML.load_file(default_config_path) if File.exist?(default_config_path) ) || {}
     end
 
+    # parse the current user's config file.  if no such file exists, fall back to the default person account.
+    # currently the default account is roderik's.
     def parse_people_config
       people_config_path = "config/people/#{Etc.getlogin}.yml"
       @people_config = ( YAML.load_file(people_config_path) if File.exist?(people_config_path) ) || YAML.load_file("config/people/roderik.yml")
@@ -45,6 +49,7 @@ module Kitchenplan
         end
     end
 
+    # parse configuration for a named group file.
     def parse_group_config(group)
         unless @group_configs[group]
             group_config_path = "config/groups/#{group}.yml"
@@ -56,6 +61,10 @@ module Kitchenplan
         end
     end
 
+    # for the current user and relevant groups and current platform,
+    # merge down all the relevant attributes and recipes into a config object with two keys:
+    #   'recipes' => chef run list
+    #   'attributes' => chef node attributes
     def config
         config = {}
         config['recipes'] = []
