@@ -32,11 +32,12 @@ class Kitchenplan
       @ohai = ohai
 
       if parse_configs == true
+        Kitchenplan::Log.debug "Kitchenplan::Config: Parsing configs from #{config_path} on init"
         self.do_parse_configs(config_path)
       end
     end
 
-    def do_parse_configs(config_path="config")
+    def do_parse_configs(config_path=self.config_path)
       self.config_path = config_path
       Kitchenplan::Log.debug "Now parsing configs in #{self.config_path}..."
       self.parse_default_config
