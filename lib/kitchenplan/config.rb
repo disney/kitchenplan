@@ -88,6 +88,7 @@ class Kitchenplan
     # territory for anyone who's worked with chef...
     def parse_config(filename)
       begin
+            Kitchenplan::Log.debug "parse_config(): Loading file: #{filename}"
             ( YAML.load(Erubis::Eruby.new(File.read(filename)).evaluate(:node => self.ohai)) if File.exist?(filename) ) || {}
       rescue Psych::SyntaxError => e
         Kitchenplan::Log.error "There was an error parsing config file #{filename}: #{e.message}"
