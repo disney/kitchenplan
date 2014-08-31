@@ -171,9 +171,17 @@ else
   sudo "chown -R #{ENV["USER"]} #{KITCHENPLAN_PATH}"
   normaldo "git clone -q #{KITCHENPLAN_REPO} #{KITCHENPLAN_PATH} -b #{KITCHENPLAN_REPO_BRANCH}"
   Dir.chdir KITCHENPLAN_PATH
-  normaldo "git clone -q #{KITCHENPLAN_CONFIG_REPO} #{KITCHENPLAN_PATH}/config -b #{KITCHENPLAN_CONFIG_REPO_BRANCH}"
-  # maybe you put your configs under the config/ directory?
-  normaldo "mv #{KITCHENPLAN_PATH}/config/config/* #{KITCHENPLAN_PATH}/config" if File.directory?("#{KITCHENPLAN_PATH}/config/config")
+  if KITCHENPLAN_CONFIG_REPO.length > 0
+    ohai "Separate config repository specified.  Cloning into #{KITCHENPLAN_PATH}/config ..."
+    if File.directory?("#{KITCHENPLAN_PATH}/config")
+      warn "Config directory already exists in application directory!"
+      puts "Removing it before cloning from #{KITCHENPLAN_CONFIG_REPO} @ #{KITCHENPLAN_CONFIG_REPO_BRANCH}."
+      normaldo "rm -rf #{KITCHENPLAN_PATH}/config"
+    end
+    normaldo "git clone -q #{KITCHENPLAN_CONFIG_REPO} #{KITCHENPLAN_PATH}/config -b #{KITCHENPLAN_CONFIG_REPO_BRANCH}"
+    # maybe you put your configs under the config/ directory?
+    normaldo "mv #{KITCHENPLAN_PATH}/config/config/* #{KITCHENPLAN_PATH}/config" if File.directory?("#{KITCHENPLAN_PATH}/config/config")
+  end
 end
 
 normaldo "./kitchenplan #{options[:interaction] ? '': '-d'}"
