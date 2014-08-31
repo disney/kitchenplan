@@ -123,6 +123,10 @@ def macos_version
   @macos_version ||= `/usr/bin/sw_vers -productVersion`.chomp[/10\.\d+/]
 end
 
+def chef_version
+  @chef_version ||= `chef-client -v`.split(':')[1]
+end
+
 ######################################################
 
 ohai "Kitchenplan is only tested on 10.8 and 10.9, proceed on your own risk." if macos_version < "10.8"
@@ -159,6 +163,14 @@ if macos_version > "10.8"
     puts "Press any key when the installation has completed."
     getc
   end
+end
+
+unless chef_version
+  ohai "Installing Chef via bootstrap script..."
+  sudo "curl https://www.opscode.com/chef/install.sh | bash"
+else
+  ohai "Chef appears to be installed already: #{chef_version}"
+  puts "If this version is out-of-date, consider managing it via cookbook."
 end
 
 if File.directory?(KITCHENPLAN_PATH)
