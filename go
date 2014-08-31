@@ -124,7 +124,11 @@ def macos_version
 end
 
 def chef_version
+  begin
   @chef_version ||= `chef-client -v`.split(':')[1]
+  rescue
+    @chef_version = false
+  end
 end
 
 ######################################################
